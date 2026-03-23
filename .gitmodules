@@ -1,0 +1,3 @@
+[submodule ".ai/global"]
+	path = .ai/global
+	url = git@github.com:mitburr/homelab-context.git

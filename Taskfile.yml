@@ -1,0 +1,62 @@
+version: '3'
+
+vars:
+  VENV_ACTIVATE: "source venv/bin/activate"
+  PROJECT_DIR: "~/Repos/mtg-discord-bot"
+  SRC_DIRS: "src/ tests/"
+
+tasks:
+  # ========== Setup ==========
+  setup:
+    desc: "Create venv and install dependencies"
+    cmds:
+      - python -m venv venv
+      - bash -c "{{.VENV_ACTIVATE}} && pip install -r requirements.txt"
+
+  # ========== Run ==========
+  start:
+    desc: "Start the bot"
+    cmds:
+      - bash -c "cd {{.PROJECT_DIR}} && {{.VENV_ACTIVATE}} && python -m src.bot"
+
+  dev:
+    desc: "Start the bot with auto-reload on file changes"
+    cmds:
+      - bash -c "cd {{.PROJECT_DIR}} && {{.VENV_ACTIVATE}} && watchfiles 'python -m src.bot' src/"
+
+  # ========== Testing ==========
+  test:
+    desc: "Run tests (usage: task test -- tests/test_scryfall.py)"
+    cmds:
+      - bash -c "cd {{.PROJECT_DIR}} && {{.VENV_ACTIVATE}} && pytest {{.CLI_ARGS}}"
+
+  test-cov:
+    desc: "Run tests with coverage report"
+    cmds:
+      - bash -c "cd {{.PROJECT_DIR}} && {{.VENV_ACTIVATE}} && pytest --cov=src --cov-report=term-missing"
+
+  # ========== Linting ==========
+  lint:
+    desc: "Run black + ruff"
+    cmds:
+      - bash -c "cd {{.PROJECT_DIR}} && {{.VENV_ACTIVATE}} && black {{.SRC_DIRS}} --line-length 100"
+      - bash -c "cd {{.PROJECT_DIR}} && {{.VENV_ACTIVATE}} && ruff check {{.SRC_DIRS}}"
+
+  lint-check:
+    desc: "Check formatting without modifying files"
+    cmds:
+      - bash -c "cd {{.PROJECT_DIR}} && {{.VENV_ACTIVATE}} && black {{.SRC_DIRS}} --line-length 100 --check"
+      - bash -c "cd {{.PROJECT_DIR}} && {{.VENV_ACTIVATE}} && ruff check {{.SRC_DIRS}}"
+
+  # ========== Utilities ==========
+  clean:
+    desc: "Remove pycache and build artifacts"
+    cmds:
+      - find {{.PROJECT_DIR}} -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+      - find {{.PROJECT_DIR}} -name "*.pyc" -delete 2>/dev/null || true
+      - echo "Cleaned"
+
+  help:
+    desc: "Show available tasks"
+    cmds:
+      - task --list
